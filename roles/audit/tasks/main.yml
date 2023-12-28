@@ -1,2 +1,43 @@
 ---
-# tasks file for audit
+- name: Create vector namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: vector
+- name: Create vector serviceaccount
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: vector
+        namespace: vector
+- name: Create vector serviceaccount rolebinding
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: vector-ca-rb
+        namespace: vector
+      subjects:
+        - kind: ServiceAccount
+          name: vector
+          namespace: vector
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+- name: Helm install of vector for auditing
+  kubernetes.core.helm:
+    create_namespace: false
+    wait: true
+    name: vector
+    chart_ref: vector/vector
+    release_namespace: vector
+    values: "{{ lookup('template', 'roles/audit/templates/vector-values.yml.j2') | from_yaml }}"

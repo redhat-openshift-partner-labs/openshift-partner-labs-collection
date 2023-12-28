@@ -1,0 +1,29 @@
+---
+version: 3
+
+build_arg_defaults:
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: '--force --verbose'
+
+images:
+  base_image:
+    name: ghcr.io/ansible-community/community-ee-minimal:latest
+
+dependencies:
+  python: requirements.txt
+  galaxy: requirements.yml
+
+additional_build_steps:
+  prepend_base: |
+    RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl
+  prepend_builder: |
+    RUN pip3 install --upgrade pip setuptools
+  append_final: |
+    RUN cd /usr/local/bin && \
+        curl -O https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz && \
+        tar -xzf openshift-client-linux.tar.gz && \
+        chmod +x /usr/local/bin/oc && \
+        curl -O https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
+        chmod +x get-helm-3 && \
+        ./get-helm-3 && \
+        helm repo add vector https://helm.vector.dev && \
+        helm repo update

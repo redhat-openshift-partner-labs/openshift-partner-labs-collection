@@ -1,18 +1,14 @@
 ---
-- hosts: localhost
-  gather_facts: false
-
-  tasks:
-    - name: Create Console Notification
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: console.openshift.io/v1
-          kind: ConsoleNotification
-          metadata:
-            name: clusterexpiration
-          spec:
-            backgroundColor: '#0088ce'
-            color: '#fff'
-            location: BannerTopBottom
-            text: 'REMINDER: CLUSTER EXPIRES {{expiration}} REACH OUT TO RED HAT FOR AN EXTENSION'
+- name: Create Console Notification
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: console.openshift.io/v1
+      kind: ConsoleNotification
+      metadata:
+        name: clusterexpiration
+      spec:
+        backgroundColor: '#0088ce'
+        color: '#fff'
+        location: BannerTopBottom
+        text: 'REMINDER: CLUSTER EXPIRES {{expiration}} REACH OUT TO RED HAT FOR AN EXTENSION'

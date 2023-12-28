@@ -1,0 +1,33 @@
+---
+- hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Run expiration role
+      include_role:
+        name: notification
+      vars:
+        generated_name: "{{ generated_name }}"
+        expiration: "{{ expiration }}"
+        company_name: "{{ company_name }}"
+    - name: Run idp role
+      include_role:
+        name: idp
+      vars:
+        generated_name: "{{ generated_name }}"
+        expiration: "{{ expiration }}"
+        company_name: "{{ company_name }}"
+    - name: Run ssl role
+      include_role:
+        name: ssl
+      vars:
+        generated_name: "{{ generated_name }}"
+        expiration: "{{ expiration }}"
+        company_name: "{{ company_name }}"
+    - name: Run audit role
+      include_role:
+        name: audit
+      vars:
+        generated_name: "{{ generated_name }}"
+        expiration: "{{ expiration }}"
+        company_name: "{{ company_name }}"

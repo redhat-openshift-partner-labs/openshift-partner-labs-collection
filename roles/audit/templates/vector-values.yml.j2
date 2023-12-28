@@ -1,0 +1,100 @@
+role: "Agent"
+
+serviceAccount:
+  create: false
+  name: "vector"
+  automountToken: true
+
+service:
+  enabled: false
+
+rollWorkload: true
+
+image:
+  repository: timberio/vector
+  pullPolicy: Always
+  pullSecrets: []
+    #tag: "0.33.0"
+  sha: ""
+
+rbac:
+  create: true
+
+podLabels:
+  vector.dev/exclude: "true"
+
+securityContext:
+  runAsUser: 0
+  privileged: true
+
+args:
+  - --config-dir
+  - "/etc/vector/"
+
+env:
+  - name: CLUSTER_GENERATED_NAME
+    value: {{generated_name}}
+  - name: X_WORKFLOW_HEADER_AUTH_TOKEN
+    value: KwL4vfvKrbxP9KRp44M9xnzkp4pvtb9CXPNJ9mbmkfsgnV4PWgTkqtmXJqnfpxJvjJf
+  - name: SINK_ENDPOINT
+    value: https://labs.apps.admin.partner-lab.rhecoeng.com/workflows/audit
+
+tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  # storageClassName: default
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+  finalizers:
+    - kubernetes.io/pvc-protection
+  selectors: {}
+
+  hostPath:
+    enabled: false
+    path: "/var/lib/vector"
+
+logLevel: "info"
+
+customConfig:
+  data_dir: /vector-data-dir
+  api:
+    enabled: false
+    address: 127.0.0.1:8686
+    playground: false
+  sources:
+    oauth_logs_src:
+      type: file
+      read_from: end
+      include:
+        - /var/log/oauth-*/audit.log
+  transforms:
+    oauth_logs_tf:
+      inputs: ["oauth_logs_src"]
+      type: remap
+      source: |-
+        . = parse_json!(.message)
+        if .stage == "ResponseComplete" && .verb == "create" && .requestObject.clientName == "console" && .responseStatus.code == 201 && .objectRef.resource == "oauthaccesstokens" {
+          .message = {"generated_name": "${CLUSTER_GENERATED_NAME}", "access_time": .stageTimestamp, "login_name": .requestObject.userName, "login_type": .requestObject.clientName}
+        } else if .stage == "ResponseComplete" && .objectRef.resource == "users" && .responseStatus.code == 200 && !exists(.user.extra) {
+          .message = {"generated_name": "${CLUSTER_GENERATED_NAME}", "access_time": .stageTimestamp, "login_name": .user.username, "login_type": .user.groups[0]}
+        } else {
+          abort
+        }
+  sinks:
+    workflows_audit_endpoint:
+      type: http
+      inputs: [oauth_logs_tf]
+      request:
+        headers: {"Content-Type": "application/json", "Accept": "application/json", "X_WORKFLOW_HEADER_AUTH_TOKEN": "${X_WORKFLOW_HEADER_AUTH_TOKEN}"}
+      tls:
+        verify_certificate: false
+      method: post
+      uri: "${SINK_ENDPOINT}"
+      encoding:
+        codec: raw_message

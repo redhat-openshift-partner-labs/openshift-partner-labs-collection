@@ -1,0 +1,5 @@
+ansible-builder==3.0.0
+ansible-lint==6.22.1
+ansible-navigator==3.5.0
+ansible-runner==2.3.4
+kubernetes>=28.1.0
