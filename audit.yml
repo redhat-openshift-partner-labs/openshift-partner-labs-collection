@@ -10,6 +10,7 @@
         generated_name: "{{ generated_name }}"
         expiration: "{{ expiration }}"
         company_name: "{{ company_name }}"
+      when: runnotification
     - name: Run idp role
       include_role:
         name: idp
@@ -17,6 +18,7 @@
         generated_name: "{{ generated_name }}"
         expiration: "{{ expiration }}"
         company_name: "{{ company_name }}"
+      when: runidp
     - name: Run ssl role
       include_role:
         name: ssl
@@ -24,6 +26,7 @@
         generated_name: "{{ generated_name }}"
         expiration: "{{ expiration }}"
         company_name: "{{ company_name }}"
+      when: runssl
     - name: Run audit role
       include_role:
         name: audit
