@@ -1,2 +1,97 @@
 ---
-# tasks file for ssl
+- name: Get Partner Lab ClusterDeployment
+  kubernetes.core.k8s_info:
+    api_key: "{{ k8s_auth_clusterdeployment_reader_key }}"
+    api_version: hive.openshift.io/v1
+    host: "{{ k8s_auth_admin_host }}"
+    kind: ClusterDeployment
+    namespace: "{{ generated_name }}"
+    name: "{{ generated_name }}"
+    persist_config: false
+    validate_certs: false
+  register: partner_lab_cluster_deployment
+
+- name: Get Partner Lab Kubeconfig
+  kubernetes.core.k8s_info:
+    api_key: "{{ k8s_auth_secret_reader_key }}"
+    api_version: v1
+    host: "{{ k8s_auth_admin_host }}"
+    kind: Secret
+    name: "{{ partner_lab_cluster_deployment.resources[0].spec.clusterMetadata.adminKubeconfigSecretRef.name }}"
+    namespace: "{{ generated_name }}"
+    persist_config: false
+    validate_certs: false
+  register: partner_lab_kubeconfig
+
+- name: Create local kubeconfig
+  ansible.builtin.copy:
+    content: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
+    dest: "./kubeconfig"
+    mode: '0600'
+
+- name: Create SSL certificate
+  kubernetes.core.k8s:
+    state: present
+    api_key: "{{ k8s_auth_certificate_writer_key }}"
+    host: "{{ k8s_auth_admin_host }}"
+    template:
+      - path: 'templates/certificate.yml.j2'
+    persist_config: false
+    validate_certs: false
+
+- name: Wait for SSL certificate
+  kubernetes.core.k8s_info:
+    api_key: "{{ k8s_auth_secret_reader_key }}"
+    host: "{{ k8s_auth_admin_host }}"
+    wait: true
+    kind: Secret
+    name: "{{ generated_name }}-wildcard-certificate"
+    namespace: openshift-ingress
+    wait_sleep: 10
+    wait_timeout: 360
+    persist_config: false
+    validate_certs: false
+
+- name: Download the SSL certificate
+  kubernetes.core.k8s_info:
+    api_key: "{{ k8s_auth_secret_reader_key }}"
+    host: "{{ k8s_auth_admin_host }}"
+    kind: Secret
+    name: "{{ generated_name }}-wildcard-certificate"
+    namespace: openshift-ingress
+    persist_config: false
+    validate_certs: false
+  register: partner_lab_certificate
+
+- name: Apply the certificate to Partner Lab
+  kubernetes.core.k8s:
+    kubeconfig: "./kubeconfig"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ generated_name }}-wildcard-certificate"
+        namespace: openshift-ingress
+      data:
+        tls.crt: "{{ partner_lab_certificate.resources[0].data['tls.crt'] }}"
+        tls.key: "{{ partner_lab_certificate.resources[0].data['tls.key'] }}"
+      type: "kubernetes.io/tls"
+    state: present
+    persist_config: false
+    validate_certs: false
+
+- name: Patch IngressController default
+  kubernetes.core.k8s:
+    kubeconfig: "./kubeconfig"
+    definition:
+      apiVersion: "operator.openshift.io/v1"
+      kind: IngressController
+      metadata:
+        name: default
+        namespace: openshift-ingress-operator
+      spec:
+        defaultCertificate:
+          name: "{{ generated_name }}-wildcard-certificate"
+    persist_config: false
+    validate_certs: false
+    state: patched

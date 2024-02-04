@@ -3,6 +3,7 @@
 generated_name: "partner-labs-devs"
 # obtain from the database
 company_name: "Partner Labs"
+k8s_auth_admin_host: "https://api.cluster.sub.domain.com:6443"
 
 # below specific to notification role
 runnotification: false
@@ -24,6 +25,9 @@ runaudit: false
 
 # below specific to ssl role
 runssl: false
+# k8s_auth_certificate_writer_key is on the admin cluster in the public namespace.
+# should be set to the token for collection-certificate-writer serviceaccount
+k8s_auth_certificate_writer_key: "serviceaccounttokencharacters12345"
 
 # below specific to idp role
 runidp: false
