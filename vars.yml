@@ -1,8 +1,43 @@
 ---
-generated_name: ""
+# obtain from the database
+generated_name: "partner-labs-devs"
+# obtain from the database
+company_name: "Partner Labs"
+
+# below specific to notification role
+runnotification: false
 # expiration should be in the format of "MM/DD/YYYY"
 expiration: ""
-company_name: ""
-runnotification: true
-runidp: false
+contacts:
+  to:
+    - johndoe@company.com
+    - jimdoe@company.com
+  cc:
+    - sponsor@redhat.com
+    - manager@redhat.com
+  bcc:
+    - dev1@redhat.com
+    - dev2@redhat.com
+
+# below specific to audit role
+runaudit: false
+
+# below specific to ssl role
 runssl: false
+
+# below specific to idp role
+runidp: false
+# regarding IDP adding the callback URL is manual, structure is
+# https://oauth-openshift.apps.{{ generated_name }}.partner-lab.rhecoeng.com/oauth2callback/RedHat
+redhat_google_idp_client_id: "googleclientid"
+redhat_google_idp_client_secret: "googleclientsecret"
+# k8s_auth_secret_reader_key and k8s_auth_clusterdeployment_reader_key are both
+# on the admin cluster in the public namespace. should be set to the tokens for the
+# collection-secret-reader and collection-clusterdeployment-reader serviceaccounts
+k8s_auth_secret_reader_key: "serviceaccounttokencharacters12345"
+k8s_auth_clusterdeployment_reader_key: "serviceaccounttokencharacters12345"
+# company name CamelCased no whitespace alphanumeric only
+oauth_company_name: "PartnerLabs"
+kubeadmin_htpasswd: "partner-labs-devs.htpasswd"
+cluster_admins:
+  - kubeadmin
