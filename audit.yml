@@ -1,36 +1,27 @@
 ---
 - hosts: localhost
+  connection: local
   gather_facts: false
-
+  vars_files:
+    - vars.yml
+  ignore_errors: true
   tasks:
-    - name: Run expiration role
+    - name: Run notification role
       include_role:
         name: notification
-      vars:
-        generated_name: "{{ generated_name }}"
-        expiration: "{{ expiration }}"
-        company_name: "{{ company_name }}"
       when: runnotification
+
     - name: Run idp role
       include_role:
         name: idp
-      vars:
-        generated_name: "{{ generated_name }}"
-        expiration: "{{ expiration }}"
-        company_name: "{{ company_name }}"
       when: runidp
+
     - name: Run ssl role
       include_role:
         name: ssl
-      vars:
-        generated_name: "{{ generated_name }}"
-        expiration: "{{ expiration }}"
-        company_name: "{{ company_name }}"
       when: runssl
+
     - name: Run audit role
       include_role:
         name: audit
-      vars:
-        generated_name: "{{ generated_name }}"
-        expiration: "{{ expiration }}"
-        company_name: "{{ company_name }}"
+      when: runaudit
