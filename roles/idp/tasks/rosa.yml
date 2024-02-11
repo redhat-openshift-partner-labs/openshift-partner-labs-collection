@@ -1,0 +1,20 @@
+- name: Generate password
+  set_fact:
+    generated_password: "{{ lookup('community.general.random_string', length=16, min_lower=4, min_upper=3, min_numeric=1, min_special=2, override_special='-_=+!#$()[]') }}"
+
+- name: Get the cluster ID
+  command: ocm list clusters --parameter search="name = '{{ generated_name | truncate(15, True, '', 0) }}'" --columns id --no-headers
+  register: cluster_id
+
+- name: Set the cluster_id fact
+  set_fact:
+    cluster_id: "{{ cluster_id.stdout }}"
+
+- name: Setup HTPasswd IdP
+  command: ocm create idp --name {{ oauth_company_name }} --type htpasswd --username kubeadmin --password {{ generated_password }} --cluster {{ cluster_id }}
+
+- name: Setup Google IdP
+  command: ocm create idp --name RedHat --type google --client-id {{ redhat_google_idp_client_id }} --client-secret {{ redhat_google_idp_client_secret }} --hosted-domain redhat.com --cluster {{ cluster_id }}
+
+- name: Add users to cluster-admins
+  command: ocm create user --group cluster-admins --cluster {{ cluster_id }} {{ oauth_users }}
