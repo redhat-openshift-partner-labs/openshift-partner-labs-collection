@@ -14,7 +14,7 @@ dependencies:
 
 additional_build_steps:
   prepend_base: |
-    RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl htpasswd-tools
+    RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl httpd-tools
   prepend_builder: |
     RUN pip3 install --upgrade pip setuptools
   append_final: |

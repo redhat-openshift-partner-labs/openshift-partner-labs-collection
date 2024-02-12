@@ -15,7 +15,7 @@ ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
 ARG ANSIBLE_GALAXY_CLI_ROLE_OPTS
 ARG PKGMGR
 
-RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl
+RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl httpd-tools
 RUN $PYCMD -m ensurepip
 COPY _build/scripts/ /output/scripts/
 COPY _build/scripts/entrypoint /opt/builder/bin/entrypoint
