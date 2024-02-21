@@ -15,7 +15,7 @@ ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
 ARG ANSIBLE_GALAXY_CLI_ROLE_OPTS
 ARG PKGMGR
 
-RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl httpd-tools
+RUN dnf install -y git gcc python3-devel openssl-devel libffi-devel openssl httpd-tools golang
 RUN $PYCMD -m ensurepip
 COPY _build/scripts/ /output/scripts/
 COPY _build/scripts/entrypoint /opt/builder/bin/entrypoint
@@ -75,6 +75,8 @@ RUN mkdir -p /runner && chgrp 0 /runner && chmod -R ug+rwx /runner
 WORKDIR /runner
 RUN $PYCMD -m pip install --no-cache-dir 'dumb-init==1.2.5'
 RUN cd /usr/local/bin && \
+    go install github.com/openshift-online/ocm-cli/cmd/ocm@latest && \
+    cp $HOME/go/bin/ocm . && \
     curl -O https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz && \
     tar -xzf openshift-client-linux.tar.gz && \
     chmod +x /usr/local/bin/oc && \
@@ -82,7 +84,8 @@ RUN cd /usr/local/bin && \
     chmod +x get-helm-3 && \
     ./get-helm-3 && \
     helm repo add vector https://helm.vector.dev && \
-    helm repo update
+    helm repo update && \
+    ocm version && oc version && helm version
 RUN rm -rf /output
 LABEL ansible-execution-environment=true
 USER 1000
