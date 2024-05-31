@@ -1,15 +1,10 @@
 ---
-- hosts: localhost
-  connection: local
-  gather_facts: no
-  ignore_errors: true
-  tasks:
-    - name: Run ocp tasks
-      import_tasks:
-        file: ocp.yml
-      when: cluster_type is defined and {{ cluster_type }} == "ocp"
+  - name: Run ocp tasks
+    import_tasks:
+      file: ocp.yml
+    when: cluster_type is defined and cluster_type == 'ocp'
 
-    - name: Run rosa tasks
-      import_tasks:
-        file: rosa.yml
-      when: cluster_type is defined and {{ cluster_type }} == "rosa"
+  - name: Run rosa tasks
+    import_tasks:
+      file: rosa.yml
+    when: cluster_type is defined and cluster_type == 'rosa'
