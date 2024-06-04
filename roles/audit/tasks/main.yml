@@ -1,7 +1,7 @@
 ---
 - name: Create vector namespace
   kubernetes.core.k8s:
-    kubeconfig: ./tmp/kubeconfig
+    kubeconfig: /tmp/kubeconfig
     state: present
     definition:
       apiVersion: v1
@@ -10,7 +10,7 @@
         name: vector
 - name: Create vector serviceaccount
   kubernetes.core.k8s:
-    kubeconfig: ./tmp/kubeconfig
+    kubeconfig: /tmp/kubeconfig
     state: present
     definition:
       apiVersion: v1
@@ -20,7 +20,7 @@
         namespace: vector
 - name: Create vector serviceaccount rolebinding
   kubernetes.core.k8s:
-    kubeconfig: ./tmp/kubeconfig
+    kubeconfig: /tmp/kubeconfig
     state: present
     definition:
       apiVersion: rbac.authorization.k8s.io/v1
@@ -38,7 +38,7 @@
         name: cluster-admin
 - name: Helm install of vector for auditing
   kubernetes.core.helm:
-    kubeconfig: ./tmp/kubeconfig
+    kubeconfig: /tmp/kubeconfig
     create_namespace: false
     wait: true
     name: vector
