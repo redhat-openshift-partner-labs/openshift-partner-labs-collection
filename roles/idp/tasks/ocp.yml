@@ -25,7 +25,7 @@
 - name: Create local kubeconfig
   ansible.builtin.copy:
     content: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
-    dest: "./tmp/kubeconfig"
+    dest: "/tmp/kubeconfig"
     mode: '0600'
 
 - name: Get Partner Lab kubeadmin password secret
@@ -46,7 +46,7 @@
 
 - name: Create cluster-admins group
   kubernetes.core.k8s:
-    kubeconfig: "./tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
     definition:
       apiVersion: user.openshift.io/v1
@@ -61,7 +61,7 @@
 
 - name: Bind cluster-admins group to cluster-admin cluster role
   kubernetes.core.k8s:
-    kubeconfig: "./tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
     definition:
       apiVersion: rbac.authorization.k8s.io/v1
@@ -90,7 +90,7 @@
 
 - name: Create htpasswd secret
   kubernetes.core.k8s:
-    kubeconfig: "./tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
     definition:
       apiVersion: v1
@@ -107,7 +107,7 @@
 
 - name: Create Google IDP client secret
   kubernetes.core.k8s:
-    kubeconfig: "./tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
     definition:
       apiVersion: v1
@@ -124,7 +124,7 @@
 
 - name: Patch OpenShift OAuth cluster resource
   kubernetes.core.k8s:
-    kubeconfig: "./tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
     definition:
       apiVersion: config.openshift.io/v1
@@ -153,7 +153,7 @@
 
 - name: Delete partner lab default kubeadmin secret
   kubernetes.core.k8s:
-    kubeconfig: "./tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
     api_version: v1
     kind: Secret
