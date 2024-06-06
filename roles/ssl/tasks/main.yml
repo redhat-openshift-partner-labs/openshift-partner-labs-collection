@@ -29,9 +29,11 @@
     dest: "./tmp/kubeconfig"
     mode: '0600'
 
-- name: Print local kubeconfig
-  ansible.builtin.command: "cat /tmp/kubeconfig"
-  register: local_kubeconfig_output
+- name: Print registered partner_lab_kubeconfig
+  ansible.builtin.debug:
+    var: partner_lab_kubeconfig
+    verbosity: 2
+    depth: 1
 
 - name: Create SSL certificate
   kubernetes.core.k8s:
