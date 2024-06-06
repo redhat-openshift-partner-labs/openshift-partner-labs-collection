@@ -33,7 +33,6 @@
   ansible.builtin.debug:
     var: partner_lab_kubeconfig
     verbosity: 2
-    depth: 1
 
 - name: Create SSL certificate
   kubernetes.core.k8s:
