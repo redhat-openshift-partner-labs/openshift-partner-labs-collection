@@ -71,6 +71,7 @@
 
 - name: Apply the certificate to Partner Lab
   kubernetes.core.k8s:
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: v1
       kind: Secret
@@ -90,6 +91,7 @@
 
 - name: Patch IngressController default
   kubernetes.core.k8s:
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
       kind: IngressController
