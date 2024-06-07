@@ -86,9 +86,6 @@
     state: present
     persist_config: false
     validate_certs: false
-  environment:
-  - name: K8S_AUTH_KUBECONFIG
-    value: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
 
 - name: Patch IngressController default
   kubernetes.core.k8s:
@@ -107,6 +104,3 @@
     persist_config: false
     validate_certs: false
     state: patched
-  environment:
-  - name: K8S_AUTH_KUBECONFIG
-    value: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
