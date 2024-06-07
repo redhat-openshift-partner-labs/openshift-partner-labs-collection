@@ -6,22 +6,28 @@
     - vars.yml
   ignore_errors: true
   tasks:
-    - name: Run notification role
+    - name: Run init setup
       include_role:
-        name: notification
-      when: runnotification
-
+        name: setup
+      when: runsetup
+      
     - name: Run idp role
       include_role:
         name: idp
       when: runidp
+
+    - name: Run audit role
+      include_role:
+        name: audit
+      when: runaudit
 
     - name: Run ssl role
       include_role:
         name: ssl
       when: runssl
 
-    - name: Run audit role
+# create a task for waiting for ssl to complete before sending out the notifcation
+    - name: Run notification role
       include_role:
-        name: audit
-      when: runaudit
+        name: notification
+      when: runnotification
