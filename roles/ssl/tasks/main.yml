@@ -90,7 +90,6 @@
 - name: Patch IngressController default
   kubernetes.core.k8s:
     host: "https://api.yash-opl-automation-test.openshiftpartnerlabs.com:6443"
-    context: "{{ partner_}}"
     kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
