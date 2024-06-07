@@ -71,7 +71,7 @@
 - name: Apply the certificate to Partner Lab
   kubernetes.core.k8s:
     host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
-    kubeconfig: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: v1
       kind: Secret
@@ -85,11 +85,14 @@
     state: present
     persist_config: false
     validate_certs: false
+  environment:
+  - name: K8S_AUTH_KUBECONFIG
+    value: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
 
 - name: Patch IngressController default
   kubernetes.core.k8s:
     host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
-    kubeconfig: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
       kind: IngressController
@@ -102,3 +105,6 @@
     persist_config: false
     validate_certs: false
     state: patched
+  environment:
+  - name: K8S_AUTH_KUBECONFIG
+    value: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
