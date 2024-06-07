@@ -29,3 +29,19 @@
     content: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
     dest: "/tmp/kubeconfig"
     mode: '0600'
+
+- name: Get Partner Lab kubeadmin password secret
+  kubernetes.core.k8s_info:
+    api_key: "{{ k8s_auth_secret_reader_key }}"
+    api_version: v1
+    host: "{{ k8s_auth_admin_host }}"
+    kind: Secret
+    name: "{{ partner_lab_cluster_deployment.resources[0].spec.clusterMetadata.adminPasswordSecretRef.name }}"
+    namespace: "{{ generated_name }}"
+    persist_config: false
+    validate_certs: false
+  register: partner_lab_adminpassword
+
+- name: Extract kubeadmin password to fact
+  ansible.builtin.set_fact:
+    kubeadmin_password: "{{ partner_lab_adminpassword.resources[0].data.password|b64decode }}"
