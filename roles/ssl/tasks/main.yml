@@ -111,3 +111,7 @@
   environment:
   - name: K8S_AUTH_KUBECONFIG
     value: "/tmp/kubeconfig"
+
+- name: Pause for 1 hour
+  ansible.builtin.pause:
+    minutes: 60
