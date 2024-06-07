@@ -71,9 +71,7 @@
 
 - name: Apply the certificate to Partner Lab
   kubernetes.core.k8s:
-    host: "https://api.yash-opl-automation-test.openshiftpartnerlabs.com:6443"
-    kubeconfig: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') }}"
-    context: "admin"
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: v1
       kind: Secret
@@ -93,9 +91,7 @@
 
 - name: Patch IngressController default
   kubernetes.core.k8s:
-    host: "https://api.yash-opl-automation-test.openshiftpartnerlabs.com:6443"
-    kubeconfig: "{{ lookup('env', 'K8S_AUTH_KUBECONFIG') }}"
-    context: "admin"
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
       kind: IngressController
