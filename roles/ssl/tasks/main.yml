@@ -71,7 +71,6 @@
 
 - name: Apply the certificate to Partner Lab
   kubernetes.core.k8s:
-    host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
     kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: v1
@@ -92,7 +91,6 @@
 
 - name: Patch IngressController default
   kubernetes.core.k8s:
-    host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
     kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
