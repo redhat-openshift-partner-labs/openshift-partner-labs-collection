@@ -87,7 +87,9 @@
     validate_certs: false
   environment:
   - name: K8S_AUTH_KUBECONFIG
-    value: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
+    value: "/tmp/kubeconfig"
+  - name: K8S_AUTH_API_KEY
+    value: ""
 
 - name: Patch IngressController default
   kubernetes.core.k8s:
@@ -107,6 +109,8 @@
   environment:
   - name: K8S_AUTH_KUBECONFIG
     value: "/tmp/kubeconfig"
+  - name: K8S_AUTH_API_KEY
+    value: ""
 
 - name: Pause for 1 hour
   ansible.builtin.pause:
