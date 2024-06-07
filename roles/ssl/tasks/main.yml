@@ -93,7 +93,7 @@
 - name: Patch IngressController default
   kubernetes.core.k8s:
     host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
-    kubeconfig: ""/tmp/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
       kind: IngressController
