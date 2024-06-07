@@ -26,8 +26,9 @@
 - name: Create local kubeconfig
   ansible.builtin.copy:
     content: "{{ partner_lab_kubeconfig.resources[0].data.kubeconfig|b64decode }}"
-    dest: "/runner/project/roles/ssl/files/kubeconfig"
+    dest: "/tmp/kubeconfig"
     mode: '0600'
+    remote_src: true
 
 - name: Print registered partner_lab_kubeconfig
   ansible.builtin.debug:
@@ -71,7 +72,7 @@
 - name: Apply the certificate to Partner Lab
   kubernetes.core.k8s:
     host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
-    kubeconfig: "/runner/project/roles/ssl/files/kubeconfig"
+    kubeconfig: "/tmp/kubeconfig"
     definition:
       apiVersion: v1
       kind: Secret
@@ -92,7 +93,7 @@
 - name: Patch IngressController default
   kubernetes.core.k8s:
     host: "{{ partner_lab_cluster_deployment.resources[0].status.apiURL }}"
-    kubeconfig: "/runner/project/roles/ssl/files/kubeconfig"
+    kubeconfig: ""/tmp/kubeconfig"
     definition:
       apiVersion: "operator.openshift.io/v1"
       kind: IngressController
