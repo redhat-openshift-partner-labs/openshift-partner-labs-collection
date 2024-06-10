@@ -1,6 +1,7 @@
 ---
 - name: Create Console Notification
   kubernetes.core.k8s:
+    kubeconfig: "/tmp/kubeconfig"
     state: present
     definition:
       apiVersion: console.openshift.io/v1
