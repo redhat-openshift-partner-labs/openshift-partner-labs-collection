@@ -8,3 +8,8 @@
     import_tasks:
       file: rosa.yml
     when: cluster_type is defined and cluster_type == 'rosa'
+
+  - name: Run fsi tasks
+    import_tasks:
+      file: fsi.yml
+    when: cluster_type is defined and cluster_type == 'fsi'

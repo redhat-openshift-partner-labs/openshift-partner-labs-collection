@@ -1,0 +1,105 @@
+- name: Initialize htpasswd file
+  ansible.builtin.command:
+    cmd: "touch {{ generated_name }}.htpasswd"
+  delegate_to: localhost
+
+- name: Create htpasswd file with users
+  ansible.builtin.command:
+    htpasswd -b {{ generated_name }}.htpasswd {{ item.name }} {{ item.pass }}
+  loop: "{{ auth.users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  delegate_to: localhost
+
+- name: Set htpasswd fact for secret creation
+  ansible.builtin.set_fact:
+    kubeadmin_htpasswd: "{{ lookup('file', './{{ generated_name }}.htpasswd') }}"
+
+- name: "Configure HTPasswd - Installing HTPasswd provider"
+  shell: |
+    oc create secret generic {{ generated_name }}-htpasswd-secret --from-file htpasswd=./{{ generated_name }}.htpasswd -n openshift-config
+    true
+  environment:
+    KUBECONFIG: "/tmp/kubeconfig"
+
+- name: Create groups and bind them to roles
+  vars:
+    cluster_roles: "{{ dict(auth.groups | map(attribute='name') | zip(auth.groups | map(attribute='clusterRole'))) }}"
+  block:
+    - name: Create group in OpenShift
+      kubernetes.core.k8s:
+        kubeconfig: "/tmp/kubeconfig"
+        host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
+        definition:
+          apiVersion: user.openshift.io/v1
+          kind: Group
+          metadata:
+            name: "{{ item.name }}"
+        state: present
+        persist_config: false
+        validate_certs: false
+      loop: "{{ auth.groups }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Add users to the group
+      kubernetes.core.k8s:
+        kubeconfig: "/tmp/kubeconfig"
+        host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
+        definition:
+          apiVersion: user.openshift.io/v1
+          kind: Group
+          metadata:
+            name: "{{ item.name }}"
+          users: "{{ auth.users | selectattr('group', 'equalto', item.name) | map(attribute='name') | list }}"
+        state: patched
+        persist_config: false
+        validate_certs: false
+      loop: "{{ auth.groups }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Bind group to the cluster role
+      kubernetes.core.k8s:
+        kubeconfig: "/tmp/kubeconfig"
+        host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: "{{ item.name }}-binding"
+          subjects:
+            - kind: Group
+              apiGroup: rbac.authorization.k8s.io
+              name: "{{ item.name }}"
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: "{{ item.clusterRole }}"
+        state: present
+        persist_config: false
+        validate_certs: false
+      loop: "{{ auth.groups }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+- name: Patch OpenShift OAuth to use htpasswd
+  kubernetes.core.k8s:
+    kubeconfig: "/tmp/kubeconfig"
+    host: "https://api.{{ generated_name }}.openshiftpartnerlabs.com:6443"
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: OAuth
+      metadata:
+        name: cluster
+      spec:
+        identityProviders:
+          - name: "{{ auth.provider.htpasswd.name }}"
+            mappingMethod: claim
+            type: HTPasswd
+            htpasswd:
+              fileData:
+                name: "{{ generated_name }}-htpasswd-secret"
+    state: patched
+    persist_config: false
+    validate_certs: false
